@@ -1,0 +1,26 @@
+[package]
+name = "mlit-kokuji"
+version = "2.0.0"
+edition = "2024"
+description = "国交省の告示・通達を検索・表示・ダウンロードする CLI"
+license = "MIT"
+repository = "https://github.com/riffst-jp/mlit-kokuji"
+
+[dependencies]
+anyhow = "1.0.104"
+calamine = "0.38.0"
+clap = { version = "4.6.7", features = ["derive"] }
+encoding_rs = "0.8.44"
+html2text = "0.17.4"
+open = "5.4.5"
+pdf-extract = "0.12.1"
+ratatui = "0.30.2"
+regex = "1.13.1"
+reqwest = { version = "0.13.5", default-features = false, features = ["blocking", "rustls"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+toml = "1.2.0"
+
+[[bin]]
+name = "mlkokuji"
+path = "src/main.rs"
