@@ -18,8 +18,11 @@
 
 ```sh
 brew tap riffst-jp/mlkokuji
+brew trust --formula riffst-jp/mlkokuji/mlkokuji
 brew install mlkokuji
 ```
+
+Homebrew は公式以外の tap の Formula を `brew trust` で信頼済みにしないと読み込みません（初回のみ）。
 
 アップデートは `brew upgrade mlkokuji` です。
 
