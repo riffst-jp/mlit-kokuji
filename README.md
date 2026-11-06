@@ -17,15 +17,24 @@
 ### Homebrew（macOS / Linux）
 
 ```sh
-brew tap ryuhey0123/mlkokuji
+brew tap riffst-jp/mlkokuji
 brew install mlkokuji
 ```
 
 アップデートは `brew upgrade mlkokuji` です。
 
+以前の `ryuhey0123/mlkokuji` を tap している場合は、入れ直してください。
+
+```sh
+brew uninstall mlkokuji
+brew untap ryuhey0123/mlkokuji
+brew tap riffst-jp/mlkokuji
+brew install mlkokuji
+```
+
 ### ビルド済みバイナリ
 
-[Releases](https://github.com/ryuhey0123/mlit-kokuji/releases) から環境に合ったファイルをダウンロードし、展開した `mlkokuji` を `PATH` の通ったディレクトリに置いてください。
+[Releases](https://github.com/riffst-jp/mlit-kokuji/releases) から環境に合ったファイルをダウンロードし、展開した `mlkokuji` を `PATH` の通ったディレクトリに置いてください。
 
 | 環境                   | ファイル                                  |
 | ---------------------- | ----------------------------------------- |
@@ -43,7 +52,7 @@ xattr -d com.apple.quarantine /path/to/mlkokuji
 ### ソースから
 
 ```sh
-cargo install --git https://github.com/ryuhey0123/mlit-kokuji
+cargo install --git https://github.com/riffst-jp/mlit-kokuji
 ```
 
 初回起動時に告示一覧を自動で取得します（`mlkokuji update` で手動取得も可能）。
@@ -149,7 +158,16 @@ git tag v2.0.0
 git push origin v2.0.0
 ```
 
-tap の更新には、`ryuhey0123/homebrew-mlkokuji` への書き込み権限（Contents: Read and write）を持つ Fine-grained PAT を、このリポジトリの Secrets に `HOMEBREW_TAP_TOKEN` として登録しておく必要があります。
+tap（`riffst-jp/homebrew-mlkokuji`）の更新には deploy key を使います。初回だけ次の手順で登録してください。
+
+```sh
+ssh-keygen -t ed25519 -N "" -C "mlit-kokuji release" -f tap_deploy_key
+gh repo deploy-key add tap_deploy_key.pub -R riffst-jp/homebrew-mlkokuji --allow-write --title "mlit-kokuji release"
+gh secret set HOMEBREW_TAP_DEPLOY_KEY -R riffst-jp/mlit-kokuji < tap_deploy_key
+rm tap_deploy_key tap_deploy_key.pub
+```
+
+未登録の場合でも Release は作成され、tap の更新だけがスキップされます。
 
 ## License
 

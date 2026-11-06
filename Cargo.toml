@@ -2,6 +2,9 @@
 name = "mlit-kokuji"
 version = "2.0.0"
 edition = "2024"
+description = "国交省の告示・通達を検索・表示・ダウンロードする CLI"
+license = "MIT"
+repository = "https://github.com/riffst-jp/mlit-kokuji"
 
 [dependencies]
 anyhow = "1.0.104"
