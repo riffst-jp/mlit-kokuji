@@ -1,0 +1,156 @@
+# タグ v* を push すると、各プラットフォーム向けにビルドして GitHub Release を作成し、
+# Homebrew tap (ryuhey0123/homebrew-mlkokuji) の Formula を更新する。
+#
+#   git tag v2.0.0 && git push origin v2.0.0
+#
+# tap の更新には、tap リポジトリへの書き込み権限を持つトークンを
+# リポジトリの Secrets に HOMEBREW_TAP_TOKEN として登録しておく必要がある。
+# （Fine-grained PAT: homebrew-mlkokuji の Contents: Read and write）
+
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  BIN: mlkokuji
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-14
+          - target: x86_64-apple-darwin
+            os: macos-14
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-22.04
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-22.04-arm
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal --target ${{ matrix.target }}
+          rustup default stable
+
+      - name: Check version matches tag
+        shell: bash
+        run: |
+          v=$(grep -m1 '^version' Cargo.toml | sed -E 's/.*"(.*)"/\1/')
+          if [ "v$v" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Cargo.toml version (v$v) does not match tag ($GITHUB_REF_NAME)"
+            exit 1
+          fi
+
+      - name: Test
+        if: matrix.target != 'x86_64-apple-darwin'
+        run: cargo test --release --locked
+
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Package
+        shell: bash
+        run: |
+          name="$BIN-$GITHUB_REF_NAME-${{ matrix.target }}"
+          mkdir -p "dist/$name"
+          cp "target/${{ matrix.target }}/release/$BIN" README.md LICENSE "dist/$name/"
+          tar -C dist -czf "dist/$name.tar.gz" "$name"
+          cd dist && shasum -a 256 "$name.tar.gz" > "$name.tar.gz.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: |
+            dist/*.tar.gz
+            dist/*.sha256
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
+
+      - name: Generate Homebrew formula
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          base="https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME"
+          sha() { cut -d' ' -f1 "dist/$BIN-$GITHUB_REF_NAME-$1.tar.gz.sha256"; }
+          url() { echo "$base/$BIN-$GITHUB_REF_NAME-$1.tar.gz"; }
+          cat > mlkokuji.rb <<EOF
+          class Mlkokuji < Formula
+            desc "国交省の告示・通達を検索・表示・ダウンロードするCLI"
+            homepage "https://github.com/$GITHUB_REPOSITORY"
+            version "$v"
+            license "MIT"
+
+            on_macos do
+              on_arm do
+                url "$(url aarch64-apple-darwin)"
+                sha256 "$(sha aarch64-apple-darwin)"
+              end
+              on_intel do
+                url "$(url x86_64-apple-darwin)"
+                sha256 "$(sha x86_64-apple-darwin)"
+              end
+            end
+
+            on_linux do
+              on_arm do
+                url "$(url aarch64-unknown-linux-gnu)"
+                sha256 "$(sha aarch64-unknown-linux-gnu)"
+              end
+              on_intel do
+                url "$(url x86_64-unknown-linux-gnu)"
+                sha256 "$(sha x86_64-unknown-linux-gnu)"
+              end
+            end
+
+            def install
+              bin.install "mlkokuji"
+            end
+
+            test do
+              assert_match version.to_s, shell_output("#{bin}/mlkokuji --version")
+            end
+          end
+          EOF
+          cat mlkokuji.rb
+
+      - name: Update Homebrew tap
+        env:
+          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          if [ -z "$TAP_TOKEN" ]; then
+            echo "::warning::HOMEBREW_TAP_TOKEN is not set; skipping tap update"
+            exit 0
+          fi
+          git clone "https://x-access-token:$TAP_TOKEN@github.com/ryuhey0123/homebrew-mlkokuji.git" tap
+          cp mlkokuji.rb tap/mlkokuji.rb
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add mlkokuji.rb
+          git commit -m "mlkokuji $GITHUB_REF_NAME"
+          git push
