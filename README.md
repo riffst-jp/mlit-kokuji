@@ -23,25 +23,16 @@ brew install mlkokuji
 
 アップデートは `brew upgrade mlkokuji` です。
 
-以前の `ryuhey0123/mlkokuji` を tap している場合は、入れ直してください。
-
-```sh
-brew uninstall mlkokuji
-brew untap ryuhey0123/mlkokuji
-brew tap riffst-jp/mlkokuji
-brew install mlkokuji
-```
-
 ### ビルド済みバイナリ
 
 [Releases](https://github.com/riffst-jp/mlit-kokuji/releases) から環境に合ったファイルをダウンロードし、展開した `mlkokuji` を `PATH` の通ったディレクトリに置いてください。
 
-| 環境                   | ファイル                                  |
-| ---------------------- | ----------------------------------------- |
-| macOS (Apple Silicon)  | `mlkokuji-vX.Y.Z-aarch64-apple-darwin.tar.gz`      |
-| macOS (Intel)          | `mlkokuji-vX.Y.Z-x86_64-apple-darwin.tar.gz`       |
-| Linux (x86_64)         | `mlkokuji-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz`  |
-| Linux (ARM64)          | `mlkokuji-vX.Y.Z-aarch64-unknown-linux-gnu.tar.gz` |
+| 環境                  | ファイル                                           |
+| --------------------- | -------------------------------------------------- |
+| macOS (Apple Silicon) | `mlkokuji-vX.Y.Z-aarch64-apple-darwin.tar.gz`      |
+| macOS (Intel)         | `mlkokuji-vX.Y.Z-x86_64-apple-darwin.tar.gz`       |
+| Linux (x86_64)        | `mlkokuji-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz`  |
+| Linux (ARM64)         | `mlkokuji-vX.Y.Z-aarch64-unknown-linux-gnu.tar.gz` |
 
 macOS でブラウザからダウンロードした場合、署名が無いため初回実行がブロックされます。次のコマンドで解除してください。
 
@@ -59,16 +50,16 @@ cargo install --git https://github.com/riffst-jp/mlit-kokuji
 
 ## Usage
 
-| Command                       | Does                                                             |
-| ----------------------------- | ---------------------------------------------------------------- |
-| `mlkokuji`                    | インタラクティブ検索（左に所轄・文書番号・日付・タイトル、右に本文プレビュー） |
-| `mlkokuji show 1024`          | 告示を開く（PDF は既定の PDF ビューア、HTML はブラウザ）。複数該当すれば一覧から選択 |
-| `mlkokuji get 1024`           | 告示を保存先ディレクトリにダウンロード。複数該当すれば一覧から選択（`d` で保存） |
-| `mlkokuji get 1024 -o DIR`    | 保存先を指定してダウンロード（`--all` で該当分すべて）           |
-| `mlkokuji list [検索語]`      | タブ区切りで一覧を出力（設定 `ui.columns` の列 + URL）            |
-| `mlkokuji update`             | 国交省サイトから一覧を再取得                                     |
-| `mlkokuji config`             | 設定ファイルの場所と内容を表示（`--init` で作成、`--edit` で編集） |
-| `mlkokuji clean`              | キャッシュを削除                                                 |
+| Command                    | Does                                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------------ |
+| `mlkokuji`                 | インタラクティブ検索（左に所轄・文書番号・日付・タイトル、右に本文プレビュー）       |
+| `mlkokuji show 1024`       | 告示を開く（PDF は既定の PDF ビューア、HTML はブラウザ）。複数該当すれば一覧から選択 |
+| `mlkokuji get 1024`        | 告示を保存先ディレクトリにダウンロード。複数該当すれば一覧から選択（`d` で保存）     |
+| `mlkokuji get 1024 -o DIR` | 保存先を指定してダウンロード（`--all` で該当分すべて）                               |
+| `mlkokuji list [検索語]`   | タブ区切りで一覧を出力（設定 `ui.columns` の列 + URL）                               |
+| `mlkokuji update`          | 国交省サイトから一覧を再取得                                                         |
+| `mlkokuji config`          | 設定ファイルの場所と内容を表示（`--init` で作成、`--edit` で編集）                   |
+| `mlkokuji clean`           | キャッシュを削除                                                                     |
 
 ### 検索語
 
@@ -81,20 +72,20 @@ cargo install --git https://github.com/riffst-jp/mlit-kokuji
 
 起動直後は検索入力（SEARCH モード）で、そのまま文字を打てば絞り込めます。`Enter` / `Esc` で NORMAL モードに移ってキー操作ができ、`/` で再び検索入力に戻ります。NORMAL モードで起動したい場合は設定で `start_in_search = false` にしてください。
 
-| Key                                 | Does                               |
-| ----------------------------------- | ---------------------------------- |
-| `j` `k` `↓` `↑` `C-n` `C-p`         | 上下に移動                         |
-| `C-d` `C-u` / `C-f` `C-b` `C-v` `M-v` | 半ページ / 1ページ移動           |
-| `G` `M->` / `gg` `Home` `M-<`       | 末尾 / 先頭へ                      |
-| `J` `K` `C-e` `C-y` / `Space` `BS`  | プレビューを 1 行 / 10 行スクロール |
-| `Enter`                             | 告示を開く（PDF はプレビュー.app 等） |
-| `d`                                 | ダウンロード                       |
-| `P`                                 | プレビュー表示の切り替え           |
-| `u`                                 | 国交省サイトからデータ再取得       |
-| `/` `i`                             | 検索入力                           |
-| `x`                                 | 検索語をクリア                     |
-| `?`                                 | ヘルプ                             |
-| `q` `Esc` `C-c`                     | 終了                               |
+| Key                                   | Does                                  |
+| ------------------------------------- | ------------------------------------- |
+| `j` `k` `↓` `↑` `C-n` `C-p`           | 上下に移動                            |
+| `C-d` `C-u` / `C-f` `C-b` `C-v` `M-v` | 半ページ / 1ページ移動                |
+| `G` `M->` / `gg` `Home` `M-<`         | 末尾 / 先頭へ                         |
+| `J` `K` `C-e` `C-y` / `Space` `BS`    | プレビューを 1 行 / 10 行スクロール   |
+| `Enter`                               | 告示を開く（PDF はプレビュー.app 等） |
+| `d`                                   | ダウンロード                          |
+| `P`                                   | プレビュー表示の切り替え              |
+| `u`                                   | 国交省サイトからデータ再取得          |
+| `/` `i`                               | 検索入力                              |
+| `x`                                   | 検索語をクリア                        |
+| `?`                                   | ヘルプ                                |
+| `q` `Esc` `C-c`                       | 終了                                  |
 
 SEARCH モードでは Emacs 風の行編集（`C-a` `C-e` `C-b` `C-f` `C-h` `C-d` `C-w` `C-u` `C-k` `M-b` `M-f`）が使えます。
 
